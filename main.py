@@ -72,6 +72,10 @@ class ChromeWindow:
         if not checkbox.is_selected():
             checkbox.click()
 
+    def ClickSubmit(self, xpath: str):
+        """Submitボタンを押す"""
+        self._GetElm((By.XPATH, xpath)).click()
+
 
 def main():
     chrome_wnd = ChromeWindow(WebDriverWindow(DownloadWebDriver()))
@@ -92,6 +96,8 @@ def main():
     date_picker = "/html/body/main/div/form/div/div[3]/label[2]/input"
     today = datetime.datetime.now().strftime("%m/%d/%Y")
     chrome_wnd.InputFieldByXPATH(date_picker, today)
+    sleep(5)  # Debug
+    chrome_wnd.ClickSubmit("/html/body/main/div/form/div/div[2]/button")
     sleep(5)  # Debug
     chrome_wnd.Quit()
 
