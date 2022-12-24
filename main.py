@@ -1,5 +1,6 @@
 import datetime
 from dataclasses import InitVar, dataclass, field
+import json
 from time import sleep
 
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -77,27 +78,29 @@ class ChromeWindow:
         self._GetElm((By.XPATH, xpath)).click()
 
 
+def GetXPATH():
+    """jsonファイルからxpathを取得する"""
+    with open("xpath.json", encoding="utf-8") as f:
+        xpath = json.load(f)
+    return xpath
+
+
 def main():
     chrome_wnd = ChromeWindow(WebDriverWindow(DownloadWebDriver()))
     url = "https://www.selenium.dev/selenium/web/web-form.html"
+    xpath = GetXPATH()
     chrome_wnd.Start(url)
     chrome_wnd.InputFieldByID("my-text-id", "Text input")
     chrome_wnd.InputFieldByName("my-password", "Password")
-    text_area_xpath = "/html/body/main/div/form/div/div[1]/label[3]/textarea"
-    chrome_wnd.InputFieldByXPATH(text_area_xpath, "Textarea")
-    drop_down_menu = "/html/body/main/div/form/div/div[2]/label[1]/select"
-    chrome_wnd.SelectDropDownMenu(drop_down_menu, "Two")
-    datalist_xpath = "/html/body/main/div/form/div/div[2]/label[2]/input"
-    chrome_wnd.SelectDropDownMenuFromDataList(datalist_xpath, "New York")
-    enabled_checkbox = "/html/body/main/div/form/div/div[2]/div[1]/label[1]/input"
-    disabled_checkbox = "/html/body/main/div/form/div/div[2]/div[1]/label[2]/input"
-    chrome_wnd.EnableCheckBox(enabled_checkbox)
-    chrome_wnd.EnableCheckBox(disabled_checkbox)
-    date_picker = "/html/body/main/div/form/div/div[3]/label[2]/input"
+    chrome_wnd.InputFieldByXPATH(xpath["text_area_xpath"], "Textarea")
+    chrome_wnd.SelectDropDownMenu(xpath["drop_down_menu"], "Two")
+    chrome_wnd.SelectDropDownMenuFromDataList(xpath["datalist_xpath"], "New York")
+    chrome_wnd.EnableCheckBox(xpath["enabled_checkbox"])
+    chrome_wnd.EnableCheckBox(xpath["disabled_checkbox"])
     today = datetime.datetime.now().strftime("%m/%d/%Y")
-    chrome_wnd.InputFieldByXPATH(date_picker, today)
+    chrome_wnd.InputFieldByXPATH(xpath["date_picker"], today)
     sleep(5)  # Debug
-    chrome_wnd.ClickSubmit("/html/body/main/div/form/div/div[2]/button")
+    chrome_wnd.ClickSubmit(xpath["submit_btn"])
     sleep(5)  # Debug
     chrome_wnd.Quit()
 
