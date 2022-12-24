@@ -34,6 +34,11 @@ class ChromeWindow:
         """WebDriverを閉じる"""
         self.web.driver.quit()
 
+    def _GetElm(self, locator: tuple[str, str]):
+        """見つかった属性を返す"""
+        self.web.wait.until(EC.visibility_of_element_located(locator))
+        return self.web.driver.find_element(*locator)
+
     def _InputField(self, elm: WebElement, value: str):
         """入力バーに要素を入力する"""
         elm.clear()
@@ -41,38 +46,29 @@ class ChromeWindow:
 
     def InputFieldByXPATH(self, xpath: str, value: str):
         """xpathを指定して入力バーに入力する"""
-        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
-        elm = self.web.driver.find_element(By.XPATH, xpath)
-        self._InputField(elm, value)
+        self._InputField(self._GetElm((By.XPATH, xpath)), value)
 
     def InputFieldByID(self, id: str, value: str):
         """idを指定して入力バーに入力する"""
-        self.web.wait.until(EC.visibility_of_element_located((By.ID, id)))
-        elm = self.web.driver.find_element(by=By.ID, value=id)
-        self._InputField(elm, value)
+        self._InputField(self._GetElm((By.ID, id)), value)
 
     def InputFieldByName(self, name: str, value: str):
         """nameを指定して入力バーに入力する"""
-        self.web.wait.until(EC.visibility_of_element_located((By.NAME, name)))
-        elm = self.web.driver.find_element(by=By.NAME, value=name)
-        self._InputField(elm, value)
+        self._InputField(self._GetElm((By.NAME, name)), value)
 
     def SelectDropDownMenu(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(select)をクリックして、指定した要素を選択する"""
-        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
-        dropdown = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        dropdown = self._GetElm((By.XPATH, xpath))
         Select(dropdown).select_by_visible_text(select_value)
 
     def SelectDropDownMenuFromDataList(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(datalist)をクリックして、指定した要素を選択する"""
-        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
-        datalist = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        datalist = self._GetElm((By.XPATH, xpath))
         datalist.send_keys(select_value)
 
     def EnableCheckBox(self, xpath: str):
         """チェックボックスにチェックを付ける"""
-        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
-        checkbox = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        checkbox = self._GetElm((By.XPATH, xpath))
         if not checkbox.is_selected():
             checkbox.click()
 
