@@ -1,9 +1,12 @@
+import datetime
 from dataclasses import InitVar, dataclass, field
+from time import sleep
 
 from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 from dl_webdriver import DownloadWebDriver
@@ -54,6 +57,25 @@ class ChromeWindow:
         elm = self.web.driver.find_element(by=By.NAME, value=name)
         self._InputField(elm, value)
 
+    def SelectDropDownMenu(self, xpath: str, select_value: str):
+        """ドロップダウンメニュー(select)をクリックして、指定した要素を選択する"""
+        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
+        dropdown = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        Select(dropdown).select_by_visible_text(select_value)
+
+    def SelectDropDownMenuFromDataList(self, xpath: str, select_value: str):
+        """ドロップダウンメニュー(datalist)をクリックして、指定した要素を選択する"""
+        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
+        datalist = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        datalist.send_keys(select_value)
+
+    def EnableCheckBox(self, xpath: str):
+        """チェックボックスにチェックを付ける"""
+        self.web.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
+        checkbox = self.web.driver.find_element(by=By.XPATH, value=xpath)
+        if not checkbox.is_selected():
+            checkbox.click()
+
 
 def main():
     chrome_wnd = ChromeWindow(WebDriverWindow(DownloadWebDriver()))
@@ -63,6 +85,18 @@ def main():
     chrome_wnd.InputFieldByName("my-password", "Password")
     text_area_xpath = "/html/body/main/div/form/div/div[1]/label[3]/textarea"
     chrome_wnd.InputFieldByXPATH(text_area_xpath, "Textarea")
+    drop_down_menu = "/html/body/main/div/form/div/div[2]/label[1]/select"
+    chrome_wnd.SelectDropDownMenu(drop_down_menu, "Two")
+    datalist_xpath = "/html/body/main/div/form/div/div[2]/label[2]/input"
+    chrome_wnd.SelectDropDownMenuFromDataList(datalist_xpath, "New York")
+    enabled_checkbox = "/html/body/main/div/form/div/div[2]/div[1]/label[1]/input"
+    disabled_checkbox = "/html/body/main/div/form/div/div[2]/div[1]/label[2]/input"
+    chrome_wnd.EnableCheckBox(enabled_checkbox)
+    chrome_wnd.EnableCheckBox(disabled_checkbox)
+    date_picker = "/html/body/main/div/form/div/div[3]/label[2]/input"
+    today = datetime.datetime.now().strftime("%m/%d/%Y")
+    chrome_wnd.InputFieldByXPATH(date_picker, today)
+    sleep(5)  # Debug
     chrome_wnd.Quit()
 
 
