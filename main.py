@@ -57,12 +57,12 @@ class ChromeWindow:
         """nameを指定して入力バーに入力する"""
         self._InputField(self._GetElm((By.NAME, name)), value)
 
-    def SelectDropDownMenu(self, xpath: str, select_value: str):
+    def SelectDropDownMenuBySelect(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(select)をクリックして、指定した要素を選択する"""
         dropdown = self._GetElm((By.XPATH, xpath))
         Select(dropdown).select_by_visible_text(select_value)
 
-    def SelectDropDownMenuFromDataList(self, xpath: str, select_value: str):
+    def SelectDropDownMenuByDataList(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(datalist)をクリックして、指定した要素を選択する"""
         datalist = self._GetElm((By.XPATH, xpath))
         datalist.send_keys(select_value)
@@ -93,8 +93,8 @@ def main():
     chrome_wnd.InputFieldByID("my-text-id", "Text input")
     chrome_wnd.InputFieldByName("my-password", "Password")
     chrome_wnd.InputFieldByXPATH(xpath["text_area_xpath"], "Textarea")
-    chrome_wnd.SelectDropDownMenu(xpath["drop_down_menu"], "Two")
-    chrome_wnd.SelectDropDownMenuFromDataList(xpath["datalist_xpath"], "New York")
+    chrome_wnd.SelectDropDownMenuBySelect(xpath["drop_down_menu"], "Two")
+    chrome_wnd.SelectDropDownMenuByDataList(xpath["datalist_xpath"], "New York")
     chrome_wnd.EnableCheckBox(xpath["enabled_checkbox"])
     chrome_wnd.EnableCheckBox(xpath["disabled_checkbox"])
     today = datetime.datetime.now().strftime("%m/%d/%Y")
