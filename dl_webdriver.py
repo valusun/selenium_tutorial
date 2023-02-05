@@ -5,7 +5,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 def DownloadWebDriver() -> webdriver.Chrome:
-    """webdriverをダウンロードして、ダウンロードしたdriverを返す"""
+    """webdriverをダウンロードする"""
 
     service = ChromeService(ChromeDriverManager(path=os.getcwd()).install())
     return webdriver.Chrome(service=service)
