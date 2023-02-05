@@ -2,6 +2,7 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 import json
 from time import sleep
+from typing import Optional, Union
 
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
@@ -26,19 +27,37 @@ class WebDriverWindow:
 @dataclass
 class ChromeWindow:
     web: WebDriverWindow
+    base_elm: Union[WebDriver, WebElement] = field(init=False)
 
-    def Start(self, url: str):
-        """受け取ったURL先にアクセスする"""
+    def Start(self, url: str, xpath: Optional[str] = None):
+        """受け取ったURL先にアクセスする
+
+        Args:
+            url (str): アクセス先URL
+            xpath (Optional[str]): ベースとするXPATH。指定しなければwebdriverを持つ
+
+        Note:
+            StartメソッドでXPATHを渡すのは気持ち悪いので良い案を考える
+        """
+
         self.web.driver.get(url)
+        self.base_elm = self.web.driver
+        if xpath:
+            self._SetBase(xpath)
+
+    def _SetBase(self, xpath: str):
+        self.base_elm = self._GetElmFromBase((By.XPATH, xpath))
 
     def Quit(self):
         """WebDriverを閉じる"""
         self.web.driver.quit()
 
-    def _GetElm(self, locator: tuple[str, str]):
-        """見つかった属性を返す"""
+    # NOTE: 親から探す場合は別メソッドを切り出す
+    def _GetElmFromBase(self, locator: tuple[str, str]):
+        """ベースとしたWebElementから探して見つかった属性を返す"""
+        print(locator)
         self.web.wait.until(EC.visibility_of_element_located(locator))
-        return self.web.driver.find_element(*locator)
+        return self.base_elm.find_element(*locator)
 
     def _InputField(self, elm: WebElement, value: str):
         """入力バーに要素を入力する"""
@@ -47,35 +66,35 @@ class ChromeWindow:
 
     def InputFieldByXPATH(self, xpath: str, value: str):
         """xpathを指定して入力バーに入力する"""
-        self._InputField(self._GetElm((By.XPATH, xpath)), value)
+        self._InputField(self._GetElmFromBase((By.XPATH, xpath)), value)
 
     def InputFieldByID(self, id: str, value: str):
         """idを指定して入力バーに入力する"""
-        self._InputField(self._GetElm((By.ID, id)), value)
+        self._InputField(self._GetElmFromBase((By.ID, id)), value)
 
     def InputFieldByName(self, name: str, value: str):
         """nameを指定して入力バーに入力する"""
-        self._InputField(self._GetElm((By.NAME, name)), value)
+        self._InputField(self._GetElmFromBase((By.NAME, name)), value)
 
     def SelectDropDownMenuBySelect(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(select)をクリックして、指定した要素を選択する"""
-        dropdown = self._GetElm((By.XPATH, xpath))
+        dropdown = self._GetElmFromBase((By.XPATH, xpath))
         Select(dropdown).select_by_visible_text(select_value)
 
     def SelectDropDownMenuByDataList(self, xpath: str, select_value: str):
         """ドロップダウンメニュー(datalist)をクリックして、指定した要素を選択する"""
-        datalist = self._GetElm((By.XPATH, xpath))
+        datalist = self._GetElmFromBase((By.XPATH, xpath))
         datalist.send_keys(select_value)
 
     def EnableCheckBox(self, xpath: str):
         """チェックボックスにチェックを付ける"""
-        checkbox = self._GetElm((By.XPATH, xpath))
+        checkbox = self._GetElmFromBase((By.XPATH, xpath))
         if not checkbox.is_selected():
             checkbox.click()
 
     def ClickSubmit(self, xpath: str):
         """Submitボタンを押す"""
-        self._GetElm((By.XPATH, xpath)).click()
+        self._GetElmFromBase((By.XPATH, xpath)).click()
 
 
 def GetXPATH():
@@ -89,7 +108,7 @@ def main():
     chrome_wnd = ChromeWindow(WebDriverWindow(DownloadWebDriver()))
     url = "https://www.selenium.dev/selenium/web/web-form.html"
     xpath = GetXPATH()
-    chrome_wnd.Start(url)
+    chrome_wnd.Start(url, xpath["base"])
     chrome_wnd.InputFieldByID("my-text-id", "Text input")
     chrome_wnd.InputFieldByName("my-password", "Password")
     chrome_wnd.InputFieldByXPATH(xpath["text_area_xpath"], "Textarea")
